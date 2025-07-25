@@ -61,14 +61,13 @@ public class AbsenceRequest {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @PrePersist
-    public void prePersist() {
+    public void setLateRequestStatus(LocalTime cutoffTime) {
         if (submittedAt == null) {
             submittedAt = LocalDateTime.now();
         }
-        // Check if request is after 11 AM
+        // Check if request is after the configured cutoff time
         LocalTime submissionTime = submittedAt.toLocalTime();
-        isLateRequest = submissionTime.isAfter(LocalTime.of(11, 0));
+        isLateRequest = submissionTime.isAfter(cutoffTime);
     }
 
     public enum RequestStatus {

@@ -31,12 +31,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("Form numbers added successfully"));
     }
 
-    //    @GetMapping("/registration-requests")
-//    public ResponseEntity<ApiResponse<List<RegistrationRequest>>> getPendingRequests() {
-//        List<RegistrationRequest> requests = adminService.getPendingRegistrationRequests();
-//        return ResponseEntity.ok(ApiResponse.success(requests));
-//    }
-// below code has to be reviewed
+
     @GetMapping("/registration-requests")
     public ResponseEntity<ApiResponse<List<RegistrationRequestResponse>>> getPendingRequests() {
         List<RegistrationRequestResponse> dtos = adminService.getPendingRegistrationRequestResponses();

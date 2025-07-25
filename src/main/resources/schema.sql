@@ -13,6 +13,18 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- System settings table
+CREATE TABLE system_settings (
+    setting_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value VARCHAR(500) NOT NULL,
+    description TEXT,
+    updated_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (updated_by) REFERENCES users(user_id)
+);
+
 -- Form numbers table
 CREATE TABLE form_numbers (
     form_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -165,10 +177,26 @@ CREATE INDEX idx_bills_status ON bills(status);
 CREATE INDEX idx_absence_requests_student ON absence_requests(student_id);
 CREATE INDEX idx_absence_requests_status ON absence_requests(status);
 CREATE INDEX idx_registration_requests_status ON registration_requests(status);
+CREATE INDEX idx_system_settings_key ON system_settings(setting_key);
 
 -- Insert default admin user
-INSERT INTO users (email, password_hash, role) VALUES 
-('admin@hostel.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBzj6dBVg1cMm2', 'ADMIN');
--- Password: admin123
 INSERT INTO users (email, password_hash, role) VALUES
-('admin@hostel.com', '$2a$10$CzBGsLNzlLFYLb8ebnheyeCKZM6nH1FZ/ZjSHNRe0YFBrvC5hD97W', 'ADMIN');
+('admin@hostel.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBzj6dBVg1cMm2', 'ADMIN');
+
+-- Insert default warden user
+INSERT INTO users (email, password_hash, role) VALUES
+('warden@hostel.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBzj6dBVg1cMm2', 'WARDEN');
+
+-- Insert default system setting for absence request cutoff time
+INSERT INTO system_settings (setting_key, setting_value, description) VALUES
+('ABSENCE_REQUEST_CUTOFF_TIME', '11:00', 'Cutoff time for early vs late absence requests (HH:mm format)');
+
+-- Password for both: admin123
+
+-- Insert some sample form numbers for testing
+INSERT IGNORE INTO form_numbers (form_number, is_used, admin_id, created_at) VALUES
+('HM2024001', FALSE, 1, NOW()),
+('HM2024002', FALSE, 1, NOW()),
+('HM2024003', FALSE, 1, NOW()),
+('HM2024004', FALSE, 1, NOW()),
+('HM2024005', FALSE, 1, NOW());

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageService;
     private final BillingService billingService;
+    private final SystemSettingService systemSettingService;
 
     @Transactional
     public void registerStudent(StudentRegistrationRequest request) {
@@ -43,8 +45,8 @@ public class StudentService {
             throw new BusinessException("Enrollment number already exists");
         }
 
-        if (registrationRequestRepository.existsByEmail(request.getEmail()) || 
-            userRepository.existsByEmail(request.getEmail())) {
+        if (registrationRequestRepository.existsByEmail(request.getEmail()) ||
+                userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("Email already exists");
         }
 
@@ -97,6 +99,10 @@ public class StudentService {
                 .build();
 
         absenceRequestRepository.save(absenceRequest);
+
+        // Set late request status based on configurable cutoff time
+        LocalTime cutoffTime = systemSettingService.getAbsenceRequestCutoffTime();
+        absenceRequest.setLateRequestStatus(cutoffTime);
     }
 
     public List<Attendance> getAttendanceHistory(String email, int months) {
@@ -118,7 +124,7 @@ public class StudentService {
 
         // Get current month bill
         Bill currentBill = billRepository.findByStudentAndMonthYear(student, monthYear).orElse(null);
-        BigDecimal pendingBillAmount = currentBill != null ? 
+        BigDecimal pendingBillAmount = currentBill != null ?
                 currentBill.getAmountDue().subtract(currentBill.getAmountPaid()) : BigDecimal.ZERO;
 
         // Get monthly expenses

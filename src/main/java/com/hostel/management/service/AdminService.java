@@ -52,7 +52,6 @@ public class AdminService {
         return registrationRequestRepository.findByStatusOrderByCreatedAtDesc(
                 RegistrationRequest.RequestStatus.PENDING);
     }
-    // below code has to be reviewed
 
     public List<RegistrationRequestResponse> getPendingRegistrationRequestResponses() {
         return getPendingRegistrationRequests()

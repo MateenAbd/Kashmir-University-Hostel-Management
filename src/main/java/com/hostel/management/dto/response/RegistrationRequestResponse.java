@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-// below code has to be reviewed
 @Data
 @Builder
 public class RegistrationRequestResponse {
