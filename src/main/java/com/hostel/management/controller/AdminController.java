@@ -3,7 +3,6 @@ package com.hostel.management.controller;
 import com.hostel.management.dto.request.PaymentRequest;
 import com.hostel.management.dto.response.ApiResponse;
 import com.hostel.management.dto.response.RegistrationRequestResponse;
-import com.hostel.management.entity.RegistrationRequest;
 import com.hostel.management.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class AdminController {
         adminService.addFormNumbers(formNumbers, authentication.getName());
         return ResponseEntity.ok(ApiResponse.success("Form numbers added successfully"));
     }
-
 
     @GetMapping("/registration-requests")
     public ResponseEntity<ApiResponse<List<RegistrationRequestResponse>>> getPendingRequests() {

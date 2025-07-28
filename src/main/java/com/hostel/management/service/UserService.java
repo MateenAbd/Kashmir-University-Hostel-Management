@@ -1,26 +1,24 @@
 package com.hostel.management.service;
 
-import com.hostel.management.entity.Student;
 import com.hostel.management.entity.User;
-import com.hostel.management.repository.StudentRepository;
-import com.hostel.management.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
-    private final UserRepository userRepository;
-    private final StudentRepository studentRepository;
+/**
+ * Service interface for user-related operations
+ */
+public interface UserService {
+    /**
+     * Checks if a user is a monitor
+     *
+     * @param email User's email
+     * @return true if user is a monitor, false otherwise
+     */
+    boolean isMonitor(String email);
 
-    public boolean isMonitor(String email) {
-        return studentRepository.findByUserEmail(email)
-                .map(Student::getIsMonitor)
-                .orElse(false);
-    }
-
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
+    /**
+     * Finds a user by email
+     *
+     * @param email User's email
+     * @return User entity
+     */
+    User findByEmail(String email);
 }

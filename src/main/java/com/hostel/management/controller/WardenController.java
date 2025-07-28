@@ -91,7 +91,7 @@ public class WardenController {
         return ResponseEntity.ok(ApiResponse.success("Absence request rejected"));
     }
 
-    // New system settings endpoints
+    // System settings endpoints
     @GetMapping("/settings")
     public ResponseEntity<ApiResponse<List<SystemSettingResponse>>> getSystemSettings() {
         List<SystemSetting> settings = systemSettingService.getAllSettings();
