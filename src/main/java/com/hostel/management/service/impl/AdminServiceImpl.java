@@ -223,10 +223,11 @@ public class AdminServiceImpl implements AdminService {
             return; // No students to generate bills for
         }
 
-        Integer totalPresentDays = attendanceRepository.countTotalPresentDaysByMonth(
+        // Get total present days of ALL students combined for the month
+        Integer totalPresentDaysAllStudents = attendanceRepository.countTotalPresentDaysByMonth(
                 monthYear.getYear(), monthYear.getMonthValue());
 
-        if (totalPresentDays == null || totalPresentDays == 0) {
+        if (totalPresentDaysAllStudents == null || totalPresentDaysAllStudents == 0) {
             // If no attendance data, create bills with zero amount
             for (Student student : students) {
                 Bill bill = Bill.builder()
@@ -241,8 +242,8 @@ public class AdminServiceImpl implements AdminService {
             return;
         }
 
-        BigDecimal perDayRate = totalAmount.divide(BigDecimal.valueOf(totalPresentDays), 2, RoundingMode.HALF_UP);
-
+        // Calculate bill for each student using the correct formula:
+        // Student Bill = (Student Present Days / Total Present Days of All Students) × Total Monthly Expenses
         for (Student student : students) {
             Integer studentPresentDays = attendanceRepository.countPresentDaysByStudentAndMonth(
                     student, monthYear.getYear(), monthYear.getMonthValue());
@@ -251,8 +252,13 @@ public class AdminServiceImpl implements AdminService {
                 studentPresentDays = 0;
             }
 
-            BigDecimal amountDue = studentPresentDays > 0 ?
-                    perDayRate.multiply(BigDecimal.valueOf(studentPresentDays)) : BigDecimal.ZERO;
+            BigDecimal amountDue = BigDecimal.ZERO;
+            if (studentPresentDays > 0 && totalPresentDaysAllStudents > 0) {
+                // Calculate proportional amount: (student days / total days) * total expense
+                BigDecimal proportion = new BigDecimal(studentPresentDays)
+                        .divide(new BigDecimal(totalPresentDaysAllStudents), 6, RoundingMode.HALF_UP);
+                amountDue = totalAmount.multiply(proportion).setScale(2, RoundingMode.HALF_UP);
+            }
 
             Bill bill = Bill.builder()
                     .student(student)

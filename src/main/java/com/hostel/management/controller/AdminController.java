@@ -4,6 +4,8 @@ import com.hostel.management.dto.request.PaymentRequest;
 import com.hostel.management.dto.response.ApiResponse;
 import com.hostel.management.dto.response.RegistrationRequestResponse;
 import com.hostel.management.service.AdminService;
+import com.hostel.management.service.BillCalculationService;
+import com.hostel.management.model.BillCalculationSummary;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final BillCalculationService billCalculationService;
 
     @PostMapping("/form-numbers")
     public ResponseEntity<ApiResponse<String>> addFormNumbers(
@@ -88,5 +91,14 @@ public class AdminController {
 
         adminService.requestStudentDeletion(studentId, reason, authentication.getName());
         return ResponseEntity.ok(ApiResponse.success("Student deletion request submitted"));
+    }
+
+    @GetMapping("/bills/calculation-summary/{monthYear}")
+    public ResponseEntity<ApiResponse<BillCalculationSummary>> getBillCalculationSummary(
+            @PathVariable String monthYear) {
+
+        YearMonth yearMonth = YearMonth.parse(monthYear);
+        BillCalculationSummary summary = billCalculationService.getBillCalculationSummary(yearMonth);
+        return ResponseEntity.ok(ApiResponse.success(summary));
     }
 }

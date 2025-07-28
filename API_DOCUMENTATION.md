@@ -76,7 +76,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBob3N0ZWwuY29tIiwic
 - Approve/reject student deletion requests
 - View monthly expenses and financial reports
 - View all absence requests
-- Configure system settings (absence request cutoff time)
+- **Configure system settings** (absence request cutoff time)
 - View all system settings
 
 **Restrictions:**
@@ -976,12 +976,32 @@ getAllSettings: () => apiClient.get('/api/warden/settings')
 4. **System**: Applies new cutoff time to future absence requests
 5. **All Users**: Experience updated behavior based on new settings
 
-### 4. Billing Workflow
+### 4. Billing Workflow (Updated)
 1. **Admin**: Enters monthly expense
-2. **System**: Generates bills based on attendance
+2. **System**: Generates bills based on proportional attendance using the formula:
+   \`\`\`
+   Student Bill = (Student Present Days ÷ Total Present Days of All Students) × Total Monthly Expenses
+   \`\`\`
+   This ensures:
+    - Fair distribution based on actual attendance
+    - Sum of all student bills equals total monthly expense
+    - Students pay proportionally to their hostel usage
 3. **Admin**: Records payments
 4. **System**: Updates student balance
 5. **Student**: Views balance and bills on dashboard
+
+#### Bill Calculation Example:
+- Total Monthly Expense: ₹10,000
+- Student A: 25 present days
+- Student B: 20 present days
+- Student C: 15 present days
+- Total Present Days (All Students): 60 days
+
+**Calculations:**
+- Student A Bill: (25 ÷ 60) × ₹10,000 = ₹4,166.67
+- Student B Bill: (20 ÷ 60) × ₹10,000 = ₹3,333.33
+- Student C Bill: (15 ÷ 60) × ₹10,000 = ₹2,500.00
+- **Total**: ₹4,166.67 + ₹3,333.33 + ₹2,500.00 = ₹10,000.00 ✓
 
 ### 5. Monitor Assignment Workflow
 1. **Admin**: Assigns monitor role to student
