@@ -23,7 +23,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        // Validate input
+        if (request == null || request.getEmail() == null || request.getPassword() == null) {
+            throw new AuthenticationException("Invalid credentials");
+        }
+
+        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
                 .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
@@ -32,11 +37,12 @@ public class AuthServiceImpl implements AuthService {
 
         Boolean isMonitor = false;
         String fullName = null;
-        
+
+        // Only check for monitor status if user is a student
         if (user.getRole() == User.UserRole.STUDENT) {
             Student student = studentRepository.findByUserEmail(user.getEmail()).orElse(null);
             if (student != null) {
-                isMonitor = student.getIsMonitor();
+                isMonitor = student.getIsMonitor() != null ? student.getIsMonitor() : false;
                 fullName = student.getFullName();
             }
         }

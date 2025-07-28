@@ -65,6 +65,12 @@ public class AbsenceRequest {
         if (submittedAt == null) {
             submittedAt = LocalDateTime.now();
         }
+
+        if (cutoffTime == null) {
+            // Default to 11:00 AM if cutoff time is null
+            cutoffTime = LocalTime.of(11, 0);
+        }
+
         // Check if request is after the configured cutoff time
         LocalTime submissionTime = submittedAt.toLocalTime();
         isLateRequest = submissionTime.isAfter(cutoffTime);

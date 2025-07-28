@@ -26,12 +26,12 @@ public class SystemSettingServiceImpl implements SystemSettingService {
     public LocalTime getAbsenceRequestCutoffTime() {
         SystemSetting setting = systemSettingRepository.findBySettingKey(SystemSetting.ABSENCE_REQUEST_CUTOFF_TIME)
                 .orElse(null);
-        
+
         if (setting == null) {
             // Return default time if not configured
             return LocalTime.of(11, 0);
         }
-        
+
         try {
             return LocalTime.parse(setting.getSettingValue(), DateTimeFormatter.ofPattern("HH:mm"));
         } catch (DateTimeParseException e) {
@@ -43,24 +43,38 @@ public class SystemSettingServiceImpl implements SystemSettingService {
     @Override
     @Transactional
     public void updateAbsenceRequestCutoffTime(LocalTime cutoffTime, String wardenEmail) {
-        User warden = userRepository.findByEmail(wardenEmail)
+        // Validate input
+        if (cutoffTime == null) {
+            throw new BusinessException("Cutoff time cannot be null");
+        }
+
+        if (wardenEmail == null || wardenEmail.trim().isEmpty()) {
+            throw new BusinessException("Warden email is required");
+        }
+
+        User warden = userRepository.findByEmail(wardenEmail.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Warden not found"));
 
         if (warden.getRole() != User.UserRole.WARDEN) {
             throw new BusinessException("Only wardens can update system settings");
         }
 
+        // Validate time range (should be reasonable business hours)
+        if (cutoffTime.isBefore(LocalTime.of(6, 0)) || cutoffTime.isAfter(LocalTime.of(23, 59))) {
+            throw new BusinessException("Cutoff time must be between 06:00 and 23:59");
+        }
+
         String timeValue = cutoffTime.format(DateTimeFormatter.ofPattern("HH:mm"));
-        
+
         SystemSetting setting = systemSettingRepository.findBySettingKey(SystemSetting.ABSENCE_REQUEST_CUTOFF_TIME)
                 .orElse(SystemSetting.builder()
                         .settingKey(SystemSetting.ABSENCE_REQUEST_CUTOFF_TIME)
-                        .description("Cutoff time for early vs late absence requests")
+                        .description("Cutoff time for early vs late absence requests (HH:mm format)")
                         .build());
 
         setting.setSettingValue(timeValue);
         setting.setUpdatedBy(warden);
-        
+
         systemSettingRepository.save(setting);
     }
 

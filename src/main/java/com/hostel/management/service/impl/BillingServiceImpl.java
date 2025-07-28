@@ -25,17 +25,29 @@ public class BillingServiceImpl implements BillingService {
     @Override
     @Transactional
     public BigDecimal addFundsToStudentBalance(Student student, BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+        // Validate input
+        if (student == null) {
+            throw new BusinessException("Student is required");
+        }
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("Amount must be greater than zero");
         }
 
+        // Validate amount is reasonable (not more than 1 million)
+        if (amount.compareTo(new BigDecimal("1000000")) > 0) {
+            throw new BusinessException("Amount cannot exceed 1,000,000");
+        }
+
         // Add to student's current balance
-        BigDecimal currentBalance = student.getCurrentBalance();
+        BigDecimal currentBalance = student.getCurrentBalance() != null ?
+                student.getCurrentBalance() : BigDecimal.ZERO;
         BigDecimal newBalance = currentBalance.add(amount);
+
         student.setCurrentBalance(newBalance);
         studentRepository.save(student);
-        
-        log.info("Added {} to student {} balance. New balance: {}", 
+
+        log.info("Added {} to student {} balance. New balance: {}",
                 amount, student.getStudentId(), newBalance);
 
         return newBalance;
@@ -43,22 +55,37 @@ public class BillingServiceImpl implements BillingService {
 
     @Override
     public BigDecimal getTotalPendingDues(Student student) {
+        if (student == null) {
+            return BigDecimal.ZERO;
+        }
+
         List<Bill> pendingBills = billRepository.findByStudentAndStatusNotOrderByMonthYearAsc(
                 student, Bill.BillStatus.FULLY_PAID);
-        
+
         BigDecimal totalDue = BigDecimal.ZERO;
         for (Bill bill : pendingBills) {
-            totalDue = totalDue.add(bill.getAmountDue().subtract(bill.getAmountPaid()));
+            BigDecimal amountDue = bill.getAmountDue() != null ? bill.getAmountDue() : BigDecimal.ZERO;
+            BigDecimal amountPaid = bill.getAmountPaid() != null ? bill.getAmountPaid() : BigDecimal.ZERO;
+            BigDecimal remaining = amountDue.subtract(amountPaid);
+
+            if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+                totalDue = totalDue.add(remaining);
+            }
         }
-        
+
         return totalDue;
     }
 
     @Override
     public BigDecimal getNetBalance(Student student) {
-        BigDecimal currentBalance = student.getCurrentBalance();
+        if (student == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal currentBalance = student.getCurrentBalance() != null ?
+                student.getCurrentBalance() : BigDecimal.ZERO;
         BigDecimal pendingDues = getTotalPendingDues(student);
-        
+
         return currentBalance.subtract(pendingDues);
     }
 }

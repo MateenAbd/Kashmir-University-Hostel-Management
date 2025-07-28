@@ -48,7 +48,7 @@ public class WardenServiceImpl implements WardenService {
 
         // Permanently delete student and related data
         Student student = request.getStudent();
-        
+
         // Delete student record (CASCADE will handle related records)
         userRepository.deleteById(student.getUser().getUserId());
     }
@@ -91,42 +91,82 @@ public class WardenServiceImpl implements WardenService {
     @Override
     @Transactional
     public void approveAbsenceRequest(Long requestId, String comments, String wardenEmail) {
+        // Validate input
+        if (requestId == null) {
+            throw new BusinessException("Request ID is required");
+        }
+
+        if (wardenEmail == null || wardenEmail.trim().isEmpty()) {
+            throw new BusinessException("Warden email is required");
+        }
+
         AbsenceRequest request = absenceRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Absence request not found"));
 
-        User warden = userRepository.findByEmail(wardenEmail)
+        User warden = userRepository.findByEmail(wardenEmail.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Warden not found"));
+
+        if (warden.getRole() != User.UserRole.WARDEN) {
+            throw new BusinessException("Only wardens can approve absence requests");
+        }
 
         if (request.getStatus() != AbsenceRequest.RequestStatus.PENDING) {
             throw new BusinessException("Request has already been processed");
         }
 
+        // Wardens should only handle late requests
+        if (!Boolean.TRUE.equals(request.getIsLateRequest())) {
+            throw new BusinessException("Warden can only approve late absence requests");
+        }
+
         request.setStatus(AbsenceRequest.RequestStatus.APPROVED);
         request.setApprovedBy(warden);
-        request.setComments(comments);
+        request.setComments(comments != null ? comments.trim() : null);
         request.setApprovedAt(LocalDateTime.now());
-        
+
         absenceRequestRepository.save(request);
     }
 
     @Override
     @Transactional
     public void rejectAbsenceRequest(Long requestId, String reason, String wardenEmail) {
+        // Validate input
+        if (requestId == null) {
+            throw new BusinessException("Request ID is required");
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new BusinessException("Rejection reason is required");
+        }
+
+        if (wardenEmail == null || wardenEmail.trim().isEmpty()) {
+            throw new BusinessException("Warden email is required");
+        }
+
         AbsenceRequest request = absenceRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Absence request not found"));
 
-        User warden = userRepository.findByEmail(wardenEmail)
+        User warden = userRepository.findByEmail(wardenEmail.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Warden not found"));
+
+        if (warden.getRole() != User.UserRole.WARDEN) {
+            throw new BusinessException("Only wardens can reject absence requests");
+        }
 
         if (request.getStatus() != AbsenceRequest.RequestStatus.PENDING) {
             throw new BusinessException("Request has already been processed");
         }
 
+        // Wardens should only handle late requests
+        if (!Boolean.TRUE.equals(request.getIsLateRequest())) {
+            throw new BusinessException("Warden can only reject late absence requests");
+        }
+
         request.setStatus(AbsenceRequest.RequestStatus.REJECTED);
         request.setApprovedBy(warden);
-        request.setComments(reason);
+        request.setComments(reason.trim());
         request.setApprovedAt(LocalDateTime.now());
-        
+
         absenceRequestRepository.save(request);
     }
 }

@@ -172,14 +172,37 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public void enterMonthlyExpense(YearMonth monthYear, BigDecimal totalAmount, String adminEmail) {
+        // Validate input
+        if (monthYear == null) {
+            throw new BusinessException("Month year is required");
+        }
+
+        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Total amount must be greater than zero");
+        }
+
+        if (adminEmail == null || adminEmail.trim().isEmpty()) {
+            throw new BusinessException("Admin email is required");
+        }
+
+        // Don't allow future months beyond next month
+        YearMonth nextMonth = YearMonth.now().plusMonths(1);
+        if (monthYear.isAfter(nextMonth)) {
+            throw new BusinessException("Cannot enter expenses for months beyond next month");
+        }
+
         String monthYearStr = monthYear.toString();
-        
+
         if (monthlyExpenseRepository.existsByMonthYear(monthYearStr)) {
             throw new BusinessException("Monthly expense already exists for " + monthYear);
         }
 
-        User admin = userRepository.findByEmail(adminEmail)
+        User admin = userRepository.findByEmail(adminEmail.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        if (admin.getRole() != User.UserRole.ADMIN) {
+            throw new BusinessException("Only admins can enter monthly expenses");
+        }
 
         MonthlyExpense expense = MonthlyExpense.builder()
                 .monthYear(monthYearStr)
@@ -195,11 +218,27 @@ public class AdminServiceImpl implements AdminService {
 
     private void generateMonthlyBills(YearMonth monthYear, BigDecimal totalAmount) {
         List<Student> students = studentRepository.findAll();
+
+        if (students.isEmpty()) {
+            return; // No students to generate bills for
+        }
+
         Integer totalPresentDays = attendanceRepository.countTotalPresentDaysByMonth(
                 monthYear.getYear(), monthYear.getMonthValue());
 
         if (totalPresentDays == null || totalPresentDays == 0) {
-            return; // No attendance data available
+            // If no attendance data, create bills with zero amount
+            for (Student student : students) {
+                Bill bill = Bill.builder()
+                        .student(student)
+                        .monthYear(monthYear.toString())
+                        .amountDue(BigDecimal.ZERO)
+                        .presentDays(0)
+                        .totalDays(monthYear.lengthOfMonth())
+                        .build();
+                billRepository.save(bill);
+            }
+            return;
         }
 
         BigDecimal perDayRate = totalAmount.divide(BigDecimal.valueOf(totalPresentDays), 2, RoundingMode.HALF_UP);
@@ -208,29 +247,56 @@ public class AdminServiceImpl implements AdminService {
             Integer studentPresentDays = attendanceRepository.countPresentDaysByStudentAndMonth(
                     student, monthYear.getYear(), monthYear.getMonthValue());
 
-            if (studentPresentDays != null && studentPresentDays > 0) {
-                BigDecimal amountDue = perDayRate.multiply(BigDecimal.valueOf(studentPresentDays));
-
-                Bill bill = Bill.builder()
-                        .student(student)
-                        .monthYear(monthYear.toString())
-                        .amountDue(amountDue)
-                        .presentDays(studentPresentDays)
-                        .totalDays(monthYear.lengthOfMonth())
-                        .build();
-
-                billRepository.save(bill);
+            if (studentPresentDays == null) {
+                studentPresentDays = 0;
             }
+
+            BigDecimal amountDue = studentPresentDays > 0 ?
+                    perDayRate.multiply(BigDecimal.valueOf(studentPresentDays)) : BigDecimal.ZERO;
+
+            Bill bill = Bill.builder()
+                    .student(student)
+                    .monthYear(monthYear.toString())
+                    .amountDue(amountDue)
+                    .presentDays(studentPresentDays)
+                    .totalDays(monthYear.lengthOfMonth())
+                    .build();
+
+            billRepository.save(bill);
         }
     }
 
     @Override
     @Transactional
     public void recordPayment(PaymentRequest paymentRequest, String adminEmail) {
+        // Validate input
+        if (paymentRequest == null) {
+            throw new BusinessException("Payment request is required");
+        }
+
+        if (paymentRequest.getStudentId() == null) {
+            throw new BusinessException("Student ID is required");
+        }
+
+        if (paymentRequest.getAmount() == null || paymentRequest.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Payment amount must be greater than zero");
+        }
+
+        if (adminEmail == null || adminEmail.trim().isEmpty()) {
+            throw new BusinessException("Admin email is required");
+        }
+
         Student student = studentRepository.findById(paymentRequest.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
-        // Simply add funds to student balance
+        User admin = userRepository.findByEmail(adminEmail.trim().toLowerCase())
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        if (admin.getRole() != User.UserRole.ADMIN) {
+            throw new BusinessException("Only admins can record payments");
+        }
+
+        // Add funds to student balance
         billingService.addFundsToStudentBalance(student, paymentRequest.getAmount());
     }
 

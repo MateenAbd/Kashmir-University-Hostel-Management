@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -50,8 +51,8 @@ public class StudentServiceImpl implements StudentService {
             throw new BusinessException("Enrollment number already exists");
         }
 
-        if (registrationRequestRepository.existsByEmail(request.getEmail()) || 
-            userRepository.existsByEmail(request.getEmail())) {
+        if (registrationRequestRepository.existsByEmail(request.getEmail()) ||
+                userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("Email already exists");
         }
 
@@ -84,7 +85,12 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public void submitAbsenceRequest(String email, AbsenceRequestDto request) {
-        Student student = studentRepository.findByUserEmail(email)
+        // Validate input
+        if (email == null || request == null || request.getAbsenceDate() == null || request.getReason() == null) {
+            throw new BusinessException("Invalid absence request data");
+        }
+
+        Student student = studentRepository.findByUserEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         // Check if request already exists for the date
@@ -97,18 +103,26 @@ public class StudentServiceImpl implements StudentService {
             throw new BusinessException("Cannot request absence for past dates");
         }
 
+        // Check if the date is too far in the future (e.g., more than 30 days)
+        if (request.getAbsenceDate().isAfter(LocalDate.now().plusDays(30))) {
+            throw new BusinessException("Cannot request absence more than 30 days in advance");
+        }
+
+        LocalDateTime submissionTime = LocalDateTime.now();
+
         AbsenceRequest absenceRequest = AbsenceRequest.builder()
                 .student(student)
                 .requestDate(LocalDate.now())
                 .absenceDate(request.getAbsenceDate())
-                .reason(request.getReason())
+                .reason(request.getReason().trim())
+                .submittedAt(submissionTime)
                 .build();
-
-        absenceRequestRepository.save(absenceRequest);
 
         // Set late request status based on configurable cutoff time
         LocalTime cutoffTime = systemSettingService.getAbsenceRequestCutoffTime();
         absenceRequest.setLateRequestStatus(cutoffTime);
+
+        absenceRequestRepository.save(absenceRequest);
     }
 
     @Override
@@ -132,7 +146,7 @@ public class StudentServiceImpl implements StudentService {
 
         // Get current month bill
         Bill currentBill = billRepository.findByStudentAndMonthYear(student, monthYear).orElse(null);
-        BigDecimal pendingBillAmount = currentBill != null ? 
+        BigDecimal pendingBillAmount = currentBill != null ?
                 currentBill.getAmountDue().subtract(currentBill.getAmountPaid()) : BigDecimal.ZERO;
 
         // Get monthly expenses

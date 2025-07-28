@@ -31,13 +31,22 @@ public class MonitorServiceImpl implements MonitorService {
     @Override
     @Transactional
     public void approveAbsenceRequest(Long requestId, String comments, String monitorEmail) {
+        // Validate input
+        if (requestId == null) {
+            throw new BusinessException("Request ID is required");
+        }
+
+        if (monitorEmail == null || monitorEmail.trim().isEmpty()) {
+            throw new BusinessException("Monitor email is required");
+        }
+
         AbsenceRequest request = absenceRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Absence request not found"));
 
-        Student monitor = studentRepository.findByUserEmail(monitorEmail)
+        Student monitor = studentRepository.findByUserEmail(monitorEmail.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Monitor not found"));
 
-        if (!monitor.getIsMonitor()) {
+        if (!Boolean.TRUE.equals(monitor.getIsMonitor())) {
             throw new BusinessException("User is not authorized as monitor");
         }
 
@@ -45,28 +54,46 @@ public class MonitorServiceImpl implements MonitorService {
             throw new BusinessException("Request has already been processed");
         }
 
-        if (request.getIsLateRequest()) {
+        if (Boolean.TRUE.equals(request.getIsLateRequest())) {
             throw new BusinessException("Monitor can only approve requests submitted before cutoff time");
+        }
+
+        // Don't allow monitors to approve their own requests
+        if (request.getStudent().getStudentId().equals(monitor.getStudentId())) {
+            throw new BusinessException("Monitor cannot approve their own absence request");
         }
 
         request.setStatus(AbsenceRequest.RequestStatus.APPROVED);
         request.setApprovedBy(monitor.getUser());
-        request.setComments(comments);
+        request.setComments(comments != null ? comments.trim() : null);
         request.setApprovedAt(LocalDateTime.now());
-        
+
         absenceRequestRepository.save(request);
     }
 
     @Override
     @Transactional
     public void rejectAbsenceRequest(Long requestId, String reason, String monitorEmail) {
+        // Validate input
+        if (requestId == null) {
+            throw new BusinessException("Request ID is required");
+        }
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new BusinessException("Rejection reason is required");
+        }
+
+        if (monitorEmail == null || monitorEmail.trim().isEmpty()) {
+            throw new BusinessException("Monitor email is required");
+        }
+
         AbsenceRequest request = absenceRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Absence request not found"));
 
-        Student monitor = studentRepository.findByUserEmail(monitorEmail)
+        Student monitor = studentRepository.findByUserEmail(monitorEmail.trim().toLowerCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Monitor not found"));
 
-        if (!monitor.getIsMonitor()) {
+        if (!Boolean.TRUE.equals(monitor.getIsMonitor())) {
             throw new BusinessException("User is not authorized as monitor");
         }
 
@@ -74,15 +101,20 @@ public class MonitorServiceImpl implements MonitorService {
             throw new BusinessException("Request has already been processed");
         }
 
-        if (request.getIsLateRequest()) {
+        if (Boolean.TRUE.equals(request.getIsLateRequest())) {
             throw new BusinessException("Monitor can only handle requests submitted before cutoff time");
+        }
+
+        // Don't allow monitors to reject their own requests
+        if (request.getStudent().getStudentId().equals(monitor.getStudentId())) {
+            throw new BusinessException("Monitor cannot reject their own absence request");
         }
 
         request.setStatus(AbsenceRequest.RequestStatus.REJECTED);
         request.setApprovedBy(monitor.getUser());
-        request.setComments(reason);
+        request.setComments(reason.trim());
         request.setApprovedAt(LocalDateTime.now());
-        
+
         absenceRequestRepository.save(request);
     }
 }
