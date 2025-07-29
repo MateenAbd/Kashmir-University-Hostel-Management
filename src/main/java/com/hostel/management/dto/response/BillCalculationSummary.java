@@ -15,19 +15,4 @@ public class BillCalculationSummary {
     private BigDecimal totalBillAmount;
     private BigDecimal averageBillAmount;
     private Boolean isCalculationValid;
-    private String calculationFormula;
-    
-    public BillCalculationSummary(String monthYear, BigDecimal totalExpense, Integer totalStudents, 
-                                Integer totalPresentDays, BigDecimal totalBillAmount, 
-                                BigDecimal averageBillAmount, Boolean isCalculationValid, 
-                                String calculationFormula) {
-        this.monthYear = monthYear;
-        this.totalExpense = totalExpense;
-        this.totalStudents = totalStudents;
-        this.totalPresentDays = totalPresentDays;
-        this.totalBillAmount = totalBillAmount;
-        this.averageBillAmount = averageBillAmount;
-        this.isCalculationValid = isCalculationValid;
-        this.calculationFormula = "Student Bill = (Student Present Days ÷ Total Present Days of All Students) × Total Monthly Expenses";
-    }
 }
