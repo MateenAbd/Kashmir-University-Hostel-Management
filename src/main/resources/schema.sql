@@ -181,11 +181,11 @@ CREATE INDEX idx_system_settings_key ON system_settings(setting_key);
 
 -- Insert default admin user
 INSERT INTO users (email, password_hash, role) VALUES
-('admin@hostel.com', '$2a$10$I0anM/bxPeYUBkGKbvC74OFf.3EHZQ7m/kCMmTk4WH5WtECXVO7d.', 'ADMIN'); //admin123
+('admin@hostel.com', '$2a$10$I0anM/bxPeYUBkGKbvC74OFf.3EHZQ7m/kCMmTk4WH5WtECXVO7d', 'ADMIN'); //admin123
 
 -- Insert default warden user
 INSERT INTO users (email, password_hash, role) VALUES
-('warden@hostel.com', '$2a$10$KL/leOscSQq5qQKo8qX0d.uqKfd15hAxMr8X6w9e72bXO44YDSoRm', 'WARDEN'); //warden123
+('warden@hostel.com', '$2a$12$S3eIyEEbyx.uWTj4VCBfvOGN6i1JXZ0SXZ0vjl0ksfwUw.XUh0hhO', 'WARDEN'); //warden123
 
 -- Insert default system setting for absence request cutoff time
 INSERT INTO system_settings (setting_key, setting_value, description) VALUES

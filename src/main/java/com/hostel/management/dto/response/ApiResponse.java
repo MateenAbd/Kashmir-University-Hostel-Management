@@ -16,6 +16,8 @@ public class ApiResponse<T> {
     private String message;
     private T data;
     private LocalDateTime timestamp;
+    private String errorCode; // Add error code for frontend
+    private Object errors; // Add validation errors
 
     public static <T> ApiResponse<T> success(T data) {
         return ApiResponse.<T>builder()
@@ -38,6 +40,25 @@ public class ApiResponse<T> {
         return ApiResponse.<T>builder()
                 .success(false)
                 .message(message)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public static <T> ApiResponse<T> error(String message, String errorCode) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .message(message)
+                .errorCode(errorCode)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public static <T> ApiResponse<T> validationError(String message, Object errors) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .message(message)
+                .errors(errors)
+                .errorCode("VALIDATION_ERROR")
                 .timestamp(LocalDateTime.now())
                 .build();
     }

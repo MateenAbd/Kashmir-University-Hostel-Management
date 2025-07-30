@@ -1,12 +1,12 @@
 -- Insert default admin user
 INSERT IGNORE INTO users (email, password_hash, role, created_at, updated_at) VALUES 
-('admin@hostel.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBzj6dBVg1cMm2', 'ADMIN', NOW(), NOW());
+('admin@hostel.com', '$2a$12$Pg8x/Wl/HXtFVXoNbg/X5.tnPKQIz3HD1lIpSfKQbevqk8X.8HXfy', 'ADMIN', NOW(), NOW());
 
 -- Insert default warden user  
 INSERT IGNORE INTO users (email, password_hash, role, created_at, updated_at) VALUES 
-('warden@hostel.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBzj6dBVg1cMm2', 'WARDEN', NOW(), NOW());
+('warden@hostel.com', '$2a$12$BfNMVHb6HheWvnDEJq9Zw.JNxUPclgdqWrjSw66SueMeWe4nKGacC', 'WARDEN', NOW(), NOW());
 
--- Password for both: admin123
+
 
 -- Insert some sample form numbers for testing
 INSERT IGNORE INTO form_numbers (form_number, is_used, admin_id, created_at) VALUES 

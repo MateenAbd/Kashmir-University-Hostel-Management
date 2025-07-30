@@ -15,4 +15,5 @@ public class BillCalculationSummary {
     private BigDecimal totalBillAmount;
     private BigDecimal averageBillAmount;
     private Boolean isCalculationValid;
+
 }

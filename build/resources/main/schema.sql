@@ -181,17 +181,16 @@ CREATE INDEX idx_system_settings_key ON system_settings(setting_key);
 
 -- Insert default admin user
 INSERT INTO users (email, password_hash, role) VALUES
-('admin@hostel.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBzj6dBVg1cMm2', 'ADMIN');
+('admin@hostel.com', '$2a$10$I0anM/bxPeYUBkGKbvC74OFf.3EHZQ7m/kCMmTk4WH5WtECXVO7d', 'ADMIN'); //admin123
 
 -- Insert default warden user
 INSERT INTO users (email, password_hash, role) VALUES
-('warden@hostel.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBzj6dBVg1cMm2', 'WARDEN');
+('warden@hostel.com', '$2a$12$S3eIyEEbyx.uWTj4VCBfvOGN6i1JXZ0SXZ0vjl0ksfwUw.XUh0hhO', 'WARDEN'); //warden123
 
 -- Insert default system setting for absence request cutoff time
 INSERT INTO system_settings (setting_key, setting_value, description) VALUES
 ('ABSENCE_REQUEST_CUTOFF_TIME', '11:00', 'Cutoff time for early vs late absence requests (HH:mm format)');
 
--- Password for both: admin123
 
 -- Insert some sample form numbers for testing
 INSERT IGNORE INTO form_numbers (form_number, is_used, admin_id, created_at) VALUES
