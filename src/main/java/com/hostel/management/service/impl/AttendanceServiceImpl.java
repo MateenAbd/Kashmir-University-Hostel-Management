@@ -22,7 +22,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final StudentRepository studentRepository;
 
     @Override
-    @Scheduled(cron = "0 1 0 * * ?") // Run at 12:01 AM every day
+    //@Scheduled(cron = "0 1 0 * * ?") // Run at 12:01 AM every day
+    @Scheduled(cron = "0 15 18 * * ?") // Run at 6:15 PM every day
     @Transactional
     public void createDailyAttendanceRecords() {
         try {

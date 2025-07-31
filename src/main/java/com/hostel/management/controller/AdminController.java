@@ -110,9 +110,42 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(summary));
     }
 
+//    @GetMapping("/students")
+//    public ResponseEntity<ApiResponse<List<StudentListResponse>>> getAllStudents() {
+//        List<Student> students = studentRepository.findAll();
+//        List<StudentListResponse> responses = students.stream()
+//                .map(student -> StudentListResponse.builder()
+//                        .studentId(student.getStudentId())
+//                        .enrollmentNo(student.getEnrollmentNo())
+//                        .fullName(student.getFullName())
+//                        .email(student.getUser().getEmail())
+//                        .phone(student.getPhone())
+//                        .department(student.getDepartment())
+//                        .batch(student.getBatch())
+//                        .district(student.getDistrict())
+//                        .isMonitor(student.getIsMonitor())
+//                        .currentBalance(student.getCurrentBalance())
+//                        .createdAt(student.getCreatedAt())
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        return ResponseEntity.ok(ApiResponse.success(responses));
+//    }
+
     @GetMapping("/students")
-    public ResponseEntity<ApiResponse<List<StudentListResponse>>> getAllStudents() {
-        List<Student> students = studentRepository.findAll();
+    public ResponseEntity<ApiResponse<List<StudentListResponse>>> getAllStudents(
+            @RequestParam(required = false) String query) {
+
+        List<Student> students;
+
+        if (query == null || query.trim().isEmpty()) {
+            students = studentRepository.findAll();
+        } else {
+//            students = studentRepository.findByFullNameContainingIgnoreCaseOrEnrollmentNoContainingIgnoreCaseOrUserEmailContainingIgnoreCase(
+//                    query, query, query);
+            students = studentRepository.searchStudents(query);
+        }
+
         List<StudentListResponse> responses = students.stream()
                 .map(student -> StudentListResponse.builder()
                         .studentId(student.getStudentId())
@@ -131,4 +164,5 @@ public class AdminController {
 
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
+
 }

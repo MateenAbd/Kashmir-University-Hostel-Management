@@ -20,19 +20,20 @@ public class WardenServiceImpl implements WardenService {
     private final DeletionRequestRepository deletionRequestRepository;
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
+    private final AttendanceRepository attendanceRepository;
 
-//    @Override
-//    public List<DeletionRequest> getPendingDeletionRequests() {
-//        return deletionRequestRepository.findByStatusOrderByCreatedAtDesc(
-//                DeletionRequest.RequestStatus.PENDING);
-//
-//    }
-@Override
-public List<DeletionRequest> getPendingDeletionRequests() {
-    List<DeletionRequest> requests = deletionRequestRepository.findByStatusOrderByCreatedAtDesc(DeletionRequest.RequestStatus.PENDING);
-    System.out.println("WardenService: Found " + requests.size() + " pending deletion requests");
-    return requests;
-}
+    @Override
+    public List<DeletionRequest> getPendingDeletionRequests() {
+        return deletionRequestRepository.findByStatusOrderByCreatedAtDesc(
+                DeletionRequest.RequestStatus.PENDING);
+
+    }
+//@Override
+//public List<DeletionRequest> getPendingDeletionRequests() {
+//    List<DeletionRequest> requests = deletionRequestRepository.findByStatusOrderByCreatedAtDesc(DeletionRequest.RequestStatus.PENDING);
+//    System.out.println("WardenService: Found " + requests.size() + " pending deletion requests");
+//    return requests;
+//}
 
 
     @Override
@@ -99,7 +100,6 @@ public List<DeletionRequest> getPendingDeletionRequests() {
     @Override
     @Transactional
     public void approveAbsenceRequest(Long requestId, String comments, String wardenEmail) {
-        // Validate input
         if (requestId == null) {
             throw new BusinessException("Request ID is required");
         }
@@ -122,7 +122,6 @@ public List<DeletionRequest> getPendingDeletionRequests() {
             throw new BusinessException("Request has already been processed");
         }
 
-        // Wardens should only handle late requests
         if (!Boolean.TRUE.equals(request.getIsLateRequest())) {
             throw new BusinessException("Warden can only approve late absence requests");
         }
@@ -133,7 +132,27 @@ public List<DeletionRequest> getPendingDeletionRequests() {
         request.setApprovedAt(LocalDateTime.now());
 
         absenceRequestRepository.save(request);
+
+        // Update or create attendance
+        Attendance attendance = attendanceRepository.findByStudentAndDate(
+                request.getStudent(), request.getAbsenceDate()).orElse(null);
+
+        if (attendance != null) {
+            attendance.setStatus(Attendance.AttendanceStatus.ABSENT);
+            attendance.setApprovedAt(LocalDateTime.now());
+            attendanceRepository.save(attendance);
+        } else {
+            Attendance newAttendance = Attendance.builder()
+                    .student(request.getStudent())
+                    .date(request.getAbsenceDate())
+                    .status(Attendance.AttendanceStatus.ABSENT)
+                    .createdAt(LocalDateTime.now())
+                    .approvedAt(LocalDateTime.now())
+                    .build();
+            attendanceRepository.save(newAttendance);
+        }
     }
+
 
     @Override
     @Transactional

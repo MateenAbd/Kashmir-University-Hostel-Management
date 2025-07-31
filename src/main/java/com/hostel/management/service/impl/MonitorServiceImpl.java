@@ -1,11 +1,13 @@
 package com.hostel.management.service.impl;
 
 import com.hostel.management.entity.AbsenceRequest;
+import com.hostel.management.entity.Attendance;
 import com.hostel.management.entity.Student;
 import com.hostel.management.entity.User;
 import com.hostel.management.exception.BusinessException;
 import com.hostel.management.exception.ResourceNotFoundException;
 import com.hostel.management.repository.AbsenceRequestRepository;
+import com.hostel.management.repository.AttendanceRepository;
 import com.hostel.management.repository.StudentRepository;
 import com.hostel.management.repository.UserRepository;
 import com.hostel.management.service.MonitorService;
@@ -22,6 +24,7 @@ public class MonitorServiceImpl implements MonitorService {
     private final AbsenceRequestRepository absenceRequestRepository;
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final AttendanceRepository attendanceRepository;
 
     @Override
     public List<AbsenceRequest> getEarlyAbsenceRequests() {
@@ -96,6 +99,25 @@ public class MonitorServiceImpl implements MonitorService {
         request.setApprovedAt(LocalDateTime.now());
 
         absenceRequestRepository.save(request);
+
+        // Update or create attendance
+        Attendance attendance = attendanceRepository.findByStudentAndDate(
+                request.getStudent(), request.getAbsenceDate()).orElse(null);
+
+        if (attendance != null) {
+            attendance.setStatus(Attendance.AttendanceStatus.ABSENT);
+            attendance.setApprovedAt(LocalDateTime.now());
+            attendanceRepository.save(attendance);
+        } else {
+            Attendance newAttendance = Attendance.builder()
+                    .student(request.getStudent())
+                    .date(request.getAbsenceDate())
+                    .status(Attendance.AttendanceStatus.ABSENT)
+                    .createdAt(LocalDateTime.now())
+                    .approvedAt(LocalDateTime.now())
+                    .build();
+            attendanceRepository.save(newAttendance);
+        }
     }
 
     @Override
