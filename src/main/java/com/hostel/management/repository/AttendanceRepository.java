@@ -16,7 +16,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Optional<Attendance> findByStudentAndDate(Student student, LocalDate date);
     
     @Query("SELECT a FROM Attendance a WHERE a.student = :student AND a.date BETWEEN :startDate AND :endDate ORDER BY a.date DESC")
-    List<Attendance> fiudentAndDateBetween(@Param("student") Student student,
+    List<Attendance> findByStudentAndDateBetween(@Param("student") Student student,
                                                @Param("startDate") LocalDate startDate, 
                                                @Param("endDate") LocalDate endDate);
     
