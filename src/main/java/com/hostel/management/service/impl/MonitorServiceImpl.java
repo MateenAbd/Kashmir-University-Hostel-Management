@@ -27,6 +27,33 @@ public class MonitorServiceImpl implements MonitorService {
     public List<AbsenceRequest> getEarlyAbsenceRequests() {
         return absenceRequestRepository.findPendingRequestsByTimeCategory(false);
     }
+//@Override
+//public List<AbsenceRequest> getEarlyAbsenceRequests() {
+//    try {
+//        System.out.println("=== SERVICE DEBUG ===");
+//        System.out.println("Getting early absence requests from service...");
+//
+//        List<AbsenceRequest> requests = absenceRequestRepository.findPendingRequestsByTimeCategory(false);
+//        System.out.println("Repository returned " + requests.size() + " requests");
+//
+//        // Debug each request
+//        for (AbsenceRequest request : requests) {
+//            System.out.println("Processing request ID: " + request.getRequestId());
+//            System.out.println("Student: " + request.getStudent().getFullName());
+//            System.out.println("Status: " + request.getStatus());
+//            System.out.println("Is late request: " + request.getIsLateRequest());
+//        }
+//
+//        return requests;
+//    } catch (Exception e) {
+//        System.out.println("=== SERVICE ERROR ===");
+//        System.out.println("Error in getEarlyAbsenceRequests service: " + e.getMessage());
+//        e.printStackTrace();
+//        throw new RuntimeException("Service error: " + e.getMessage(), e);
+//    }
+//}
+
+
 
     @Override
     @Transactional
@@ -59,9 +86,9 @@ public class MonitorServiceImpl implements MonitorService {
         }
 
         // Don't allow monitors to approve their own requests
-        if (request.getStudent().getStudentId().equals(monitor.getStudentId())) {
-            throw new BusinessException("Monitor cannot approve their own absence request");
-        }
+//        if (request.getStudent().getStudentId().equals(monitor.getStudentId())) {
+//            throw new BusinessException("Monitor cannot approve their own absence request");
+//        }
 
         request.setStatus(AbsenceRequest.RequestStatus.APPROVED);
         request.setApprovedBy(monitor.getUser());

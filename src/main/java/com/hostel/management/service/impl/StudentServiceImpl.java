@@ -22,6 +22,7 @@ import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -124,6 +125,76 @@ public class StudentServiceImpl implements StudentService {
 
         absenceRequestRepository.save(absenceRequest);
     }
+//@Override
+//@Transactional
+//public void submitAbsenceRequest(String email, AbsenceRequestDto request) {
+//    System.out.println("=== DEBUG: Starting absence request submission ===");
+//    System.out.println("Email: " + email);
+//    System.out.println("Request date: " + request.getAbsenceDate());
+//    System.out.println("Request reason: " + request.getReason());
+//
+//    // Validate input
+//    if (email == null || request == null || request.getAbsenceDate() == null || request.getReason() == null) {
+//        System.out.println("=== DEBUG: Validation failed - missing data ===");
+//        throw new BusinessException("Invalid absence request data");
+//    }
+//
+//    Student student = studentRepository.findByUserEmail(email.trim().toLowerCase())
+//            .orElseThrow(() -> {
+//                System.out.println("=== DEBUG: Student not found for email: " + email + " ===");
+//                return new ResourceNotFoundException("Student not found");
+//            });
+//
+//    System.out.println("Found student: " + student.getFullName() + " (ID: " + student.getStudentId() + ")");
+//
+//    // Check if request already exists for the date
+//    Optional<AbsenceRequest> existingRequest = absenceRequestRepository.findByStudentAndAbsenceDate(student, request.getAbsenceDate());
+//
+//    System.out.println("Existing request found: " + existingRequest.isPresent());
+//    if (existingRequest.isPresent()) {
+//        AbsenceRequest existing = existingRequest.get();
+//        System.out.println("Existing request details:");
+//        System.out.println("  - Request ID: " + existing.getRequestId());
+//        System.out.println("  - Student ID: " + existing.getStudent().getStudentId());
+//        System.out.println("  - Absence Date: " + existing.getAbsenceDate());
+//        System.out.println("  - Status: " + existing.getStatus());
+//        System.out.println("  - Submitted At: " + existing.getSubmittedAt());
+//
+//        throw new BusinessException("Absence request already exists for this date");
+//    }
+//
+//    // Check if the date is not in the past (except today)
+//    if (request.getAbsenceDate().isBefore(LocalDate.now())) {
+//        System.out.println("=== DEBUG: Absence date is in the past ===");
+//        throw new BusinessException("Cannot request absence for past dates");
+//    }
+//
+//    // Check if the date is too far in the future (e.g., more than 30 days)
+//    if (request.getAbsenceDate().isAfter(LocalDate.now().plusDays(30))) {
+//        System.out.println("=== DEBUG: Absence date is too far in the future ===");
+//        throw new BusinessException("Cannot request absence more than 30 days in advance");
+//    }
+//
+//    LocalDateTime submissionTime = LocalDateTime.now();
+//    System.out.println("Submission timestamp: " + submissionTime);
+//
+//    AbsenceRequest absenceRequest = AbsenceRequest.builder()
+//            .student(student)
+//            .requestDate(LocalDate.now())
+//            .absenceDate(request.getAbsenceDate())
+//            .reason(request.getReason().trim())
+//            .submittedAt(submissionTime)
+//            .build();
+//
+//    // Set late request status based on configurable cutoff time
+//    LocalTime cutoffTime = systemSettingService.getAbsenceRequestCutoffTime();
+//    System.out.println("Cutoff time from system settings: " + cutoffTime);
+//    absenceRequest.setLateRequestStatus(cutoffTime);
+//
+//    absenceRequestRepository.save(absenceRequest);
+//    System.out.println("=== DEBUG: Absence request saved successfully ===");
+//}
+
 
     @Override
     public List<Attendance> getAttendanceHistory(String email, int months) {

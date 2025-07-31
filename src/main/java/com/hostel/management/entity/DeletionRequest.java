@@ -1,5 +1,6 @@
 package com.hostel.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,46 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+//@Entity
+//@Table(name = "deletion_requests")
+//@Data
+//@Builder
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@EntityListeners(AuditingEntityListener.class)
+//public class DeletionRequest {
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long requestId;
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "student_id", nullable = false)
+//    private Student student;
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "requested_by", nullable = false)
+//    private User requestedBy;
+//
+//    private String reason;
+//
+//    @Enumerated(EnumType.STRING)
+//    @Builder.Default
+//    private RequestStatus status = RequestStatus.PENDING;
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "reviewed_by")
+//    private User reviewedBy;
+//
+//    @CreatedDate
+//    private LocalDateTime createdAt;
+//
+//    private LocalDateTime reviewedAt;
+//
+//    public enum RequestStatus {
+//        PENDING, APPROVED, REJECTED
+//    }
+//}
+
 @Entity
 @Table(name = "deletion_requests")
 @Data
@@ -17,6 +58,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})  // Ignore Hibernate proxies on entire entity
 public class DeletionRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,10 +66,12 @@ public class DeletionRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    @JsonIgnoreProperties({"deletionRequests", "absenceRequests", "user", "hibernateLazyInitializer", "handler"})
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_by", nullable = false)
+    @JsonIgnoreProperties({"passwordHash", "deletionRequests", "absenceRequests", "hibernateLazyInitializer", "handler"})
     private User requestedBy;
 
     private String reason;
@@ -38,6 +82,7 @@ public class DeletionRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewed_by")
+    @JsonIgnoreProperties({"passwordHash", "deletionRequests", "absenceRequests", "hibernateLazyInitializer", "handler"})
     private User reviewedBy;
 
     @CreatedDate
@@ -49,3 +94,4 @@ public class DeletionRequest {
         PENDING, APPROVED, REJECTED
     }
 }
+

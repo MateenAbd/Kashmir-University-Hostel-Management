@@ -1,5 +1,6 @@
 package com.hostel.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,13 +21,15 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AbsenceRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long requestId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "student_id", nullable = false)
+    @JsonIgnoreProperties({"absenceRequests", "user", "otherRecursiveFields"}) // ignore fields causing recursion in Student entity
     private Student student;
 
     @Column(nullable = false)
@@ -42,8 +45,9 @@ public class AbsenceRequest {
     @Builder.Default
     private RequestStatus status = RequestStatus.PENDING;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "approved_by")
+    @JsonIgnoreProperties({"password", "absenceRequests", "otherRecursiveFields"}) // adjust accordingly
     private User approvedBy;
 
     private String comments;

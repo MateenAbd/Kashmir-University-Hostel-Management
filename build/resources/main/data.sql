@@ -5,7 +5,8 @@ INSERT IGNORE INTO users (email, password_hash, role, created_at, updated_at) VA
 -- Insert default warden user  
 INSERT IGNORE INTO users (email, password_hash, role, created_at, updated_at) VALUES 
 ('warden@hostel.com', '$2a$12$BfNMVHb6HheWvnDEJq9Zw.JNxUPclgdqWrjSw66SueMeWe4nKGacC', 'WARDEN', NOW(), NOW());
-
+INSERT IGNORE INTO users (email, password_hash, role, created_at, updated_at) VALUES
+('mateen@gmail.com', '$2a$12$iUEyDqFpcdFNePAsMsXlM.dPYSXx7JvhXdGP6FrbuvWmHsilK6rwG', 'STUDENT', NOW(), NOW());
 
 
 -- Insert some sample form numbers for testing

@@ -4,10 +4,14 @@ import com.hostel.management.dto.request.PaymentRequest;
 import com.hostel.management.dto.response.ApiResponse;
 import com.hostel.management.dto.response.RegistrationRequestResponse;
 import com.hostel.management.dto.response.BillCalculationSummary;
+import com.hostel.management.dto.response.StudentListResponse;
+import com.hostel.management.entity.Student;
+import com.hostel.management.repository.StudentRepository;
 import com.hostel.management.service.AdminService;
 import com.hostel.management.service.BillCalculationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -23,6 +28,9 @@ public class AdminController {
 
     private final AdminService adminService;
     private final BillCalculationService billCalculationService;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     @PostMapping("/form-numbers")
     public ResponseEntity<ApiResponse<String>> addFormNumbers(
@@ -100,5 +108,27 @@ public class AdminController {
         YearMonth yearMonth = YearMonth.parse(monthYear);
         BillCalculationSummary summary = billCalculationService.getBillCalculationSummary(yearMonth);
         return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+
+    @GetMapping("/students")
+    public ResponseEntity<ApiResponse<List<StudentListResponse>>> getAllStudents() {
+        List<Student> students = studentRepository.findAll();
+        List<StudentListResponse> responses = students.stream()
+                .map(student -> StudentListResponse.builder()
+                        .studentId(student.getStudentId())
+                        .enrollmentNo(student.getEnrollmentNo())
+                        .fullName(student.getFullName())
+                        .email(student.getUser().getEmail())
+                        .phone(student.getPhone())
+                        .department(student.getDepartment())
+                        .batch(student.getBatch())
+                        .district(student.getDistrict())
+                        .isMonitor(student.getIsMonitor())
+                        .currentBalance(student.getCurrentBalance())
+                        .createdAt(student.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(ApiResponse.success(responses));
     }
 }

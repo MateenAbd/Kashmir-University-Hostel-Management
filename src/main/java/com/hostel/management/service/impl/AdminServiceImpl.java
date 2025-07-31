@@ -100,7 +100,7 @@ public class AdminServiceImpl implements AdminService {
         // Create user account
         User user = User.builder()
                 .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode("defaultPassword123")) // Should be changed on first login
+                .passwordHash(passwordEncoder.encode("password123")) // Should be changed on first login request.getPassword()
                 .role(User.UserRole.STUDENT)
                 .build();
 

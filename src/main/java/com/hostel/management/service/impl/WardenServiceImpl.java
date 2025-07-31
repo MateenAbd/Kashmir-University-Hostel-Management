@@ -21,11 +21,19 @@ public class WardenServiceImpl implements WardenService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
 
-    @Override
-    public List<DeletionRequest> getPendingDeletionRequests() {
-        return deletionRequestRepository.findByStatusOrderByCreatedAtDesc(
-                DeletionRequest.RequestStatus.PENDING);
-    }
+//    @Override
+//    public List<DeletionRequest> getPendingDeletionRequests() {
+//        return deletionRequestRepository.findByStatusOrderByCreatedAtDesc(
+//                DeletionRequest.RequestStatus.PENDING);
+//
+//    }
+@Override
+public List<DeletionRequest> getPendingDeletionRequests() {
+    List<DeletionRequest> requests = deletionRequestRepository.findByStatusOrderByCreatedAtDesc(DeletionRequest.RequestStatus.PENDING);
+    System.out.println("WardenService: Found " + requests.size() + " pending deletion requests");
+    return requests;
+}
+
 
     @Override
     @Transactional
