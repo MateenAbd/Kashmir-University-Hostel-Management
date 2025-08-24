@@ -413,6 +413,22 @@ photo: [File - JPEG/PNG, max 2MB]
 }
 \`\`\`
 
+#### GET /api/admin/files/student-photo/{filename}
+
+**Description:** Retrieve a student's photo file by filename
+**Access:** Admin only
+
+**Response:**
+
+- **Success (200 OK):** Binary image data (e.g., JPEG/PNG) with headers:
+    - Content-Type: Determined by file (e.g., image/jpeg)
+    - Content-Disposition: inline; filename="{filename}"
+    - Cache-Control: max-age=3600
+- **Error Responses:**
+    - 400 Bad Request: Invalid filename or path traversal attempt
+    - 404 Not Found: File does not exist
+    - 500 Internal Server Error: Server-side IO error
+
 ---
 
 ### 4. Warden Endpoints
